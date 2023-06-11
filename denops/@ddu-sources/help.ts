@@ -50,6 +50,10 @@ export class Source extends BaseSource<Params> {
             }
 
             const [tag, fname, _pattern] = segment;
+            if (fname.endsWith(".md")) {
+              // Lazy.nvim generates tags for markdown as well.
+              return;
+            }
             const path = join(root, fname);
             const pattern = _pattern.slice(1);
 
