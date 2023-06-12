@@ -13,6 +13,7 @@ export type HelpInfo = {
 type Params = {
   style: "allLang" | "minimal";
   helpLang?: string;
+  readme: "exclude" | "include" | "only";
 };
 
 export class Source extends BaseSource<Params> {
@@ -51,8 +52,8 @@ export class Source extends BaseSource<Params> {
             }
 
             const [tag, fname, _pattern] = segment;
-            if (fname.endsWith(".md")) {
-              // Lazy.nvim generates tags for markdown as well.
+            // Lazy.nvim generates tags for markdown as well.
+            if ((fname.endsWith(".md") ? params.readme === "exclude" : params.readme === "only")) {
               return;
             }
             const path = join(root, fname);
@@ -99,6 +100,7 @@ export class Source extends BaseSource<Params> {
   params(): Params {
     return {
       style: "minimal",
+      readme: "exclude",
     };
   }
 }

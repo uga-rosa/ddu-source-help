@@ -55,7 +55,19 @@ style		(string)
 
 	Default: "minimal"
 
-		Default: "minimal"
+						*ddu-source-help-param-readme*
+readme		(string)
+	Handling of tags linked to README and other markdown files generated
+	by lazy.nvim, etc.
+
+	exclude:	Show only original help tags.
+
+	include:	Show both.
+
+	only:		Show only readme tags.
+
+	Default: "exclude"
+
 
 ==============================================================================
 ACTIONS						*ddu-kind-help-actions*
