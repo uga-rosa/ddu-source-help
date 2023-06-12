@@ -9,7 +9,6 @@ import {
 import { Denops, fn } from "https://deno.land/x/ddu_vim@v3.0.2/deps.ts";
 
 export type ActionData = {
-  word: string;
   path: string;
   pattern: string;
 };
@@ -43,8 +42,7 @@ export class Kind extends BaseKind<Params> {
         "tab",
       );
 
-      const action = items[0]?.action as ActionData;
-      await denops.cmd(`silent ${openCommand} help ${action.word}`);
+      await denops.cmd(`silent ${openCommand} help ${items[0].word}`);
       return ActionFlags.None;
     },
     vsplit: (args: ActionArguments<Params>) => {

@@ -23,13 +23,14 @@ export class Source extends BaseSource<Params> {
     sourceParams: Params;
     sourceOptions: SourceOptions;
   }): ReadableStream<Item<ActionData>[]> {
+    const { denops, sourceParams: params } = args;
+
     return new ReadableStream({
       async start(controller) {
-        const langs = args.sourceParams.helpLang?.split(",") ??
-          (await op.helplang.getGlobal(args.denops)).split(",");
+        const langs = (params.helpLang ?? await op.helplang.get(denops)).split(",");
 
-        const rtp = await op.runtimepath.getGlobal(args.denops);
-        const tagfiles = (await fn.globpath(args.denops, rtp, "doc/tags*"))
+        const rtp = await op.runtimepath.get(denops);
+        const tagfiles = (await fn.globpath(denops, rtp, "doc/tags*"))
           .split("\n")
           .filter((tagfile) => /tags(?:-\w+)?$/.test(tagfile)); // Filter tagsrch.txt, etc.
 
@@ -65,15 +66,13 @@ export class Source extends BaseSource<Params> {
         }));
 
         const items = Object.entries(tagMap).flatMap(([tag, infos]) => {
-          if (args.sourceParams.style === "minimal" || infos.length === 1) {
+          if (params.style === "minimal" || infos.length === 1) {
             return {
               word: tag,
               action: {
-                word: tag,
                 path: infos[0].path,
                 pattern: infos[0].pattern,
               },
-              data: infos[0].lang,
             };
           } else {
             return infos
@@ -83,11 +82,9 @@ export class Source extends BaseSource<Params> {
                 return {
                   word: tagWithLang,
                   action: {
-                    word: tagWithLang,
                     path: info.path,
                     pattern: info.pattern,
                   },
-                  data: info.lang,
                 };
               });
           }
