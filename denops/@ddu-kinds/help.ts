@@ -6,7 +6,7 @@ import {
   PreviewContext,
   Previewer,
 } from "https://deno.land/x/ddu_vim@v3.0.2/types.ts";
-import { Denops } from "https://deno.land/x/ddu_vim@v3.0.2/deps.ts";
+import { Denops, fn } from "https://deno.land/x/ddu_vim@v3.0.2/deps.ts";
 
 export type ActionData = {
   word: string;
@@ -21,8 +21,6 @@ type OpenParams = {
 type Params = Record<never, never>;
 
 export class Kind extends BaseKind<Params> {
-  contents?: Record<string, string[]>;
-
   override actions: Record<
     string,
     (args: ActionArguments<Params>) => Promise<ActionFlags>
@@ -72,25 +70,46 @@ export class Kind extends BaseKind<Params> {
     if (!action || !action.path) {
       return;
     }
-    const path = action.path;
+    const { denops, previewContext } = args;
 
-    if (!this.contents) {
-      this.contents = {};
-    }
-    if (!this.contents[path]) {
-      this.contents[path] = (await Deno.readTextFile(path)).split(/\r?\n/);
-    }
-    const lineNr = this.contents[path].findIndex((line) => line.includes(action.pattern)) + 1;
+    const command = await new Deno.Command("rg", {
+      args: ["-n", "-F", action.pattern, action.path],
+      stdin: "null",
+      stdout: "piped",
+    }).output();
+    const lineNr = Number(decode(command.stdout).replace(/:.*/, ""));
 
-    const [start, end] = [lineNr, lineNr + args.previewContext.height];
+    if (isNaN(lineNr) || lineNr < 1) {
+      return {
+        kind: "nofile",
+        contents: [
+          "Error",
+          `No matches for ${action.pattern} in ${action.path}`,
+        ],
+      };
+    }
+
+    const [start, end] = [lineNr, lineNr + previewContext.height];
+
+    const bufnr = await fn.bufadd(denops, action.path);
+    await fn.bufload(denops, bufnr);
+
+    const lines = await fn.getbufline(denops, bufnr, start, end);
 
     return {
-      kind: "terminal",
-      cmds: ["bat", "-n", path, "-r", `${start}:${end}`, "--highlight-line", "0"],
+      kind: "nofile",
+      contents: lines,
+      lineNr: 1,
+      syntax: "help",
     };
   }
 
   params(): Params {
     return {};
   }
+}
+
+const DECODER = new TextDecoder();
+function decode(u: Uint8Array) {
+  return DECODER.decode(u);
 }
