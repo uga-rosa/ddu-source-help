@@ -98,7 +98,7 @@ export class Kind extends BaseKind<Params> {
       kind: "nofile",
       contents: lines,
       lineNr: 1,
-      syntax: "help",
+      syntax: action.path.endsWith(".md") ? "markdown" : "help",
     };
   }
 
