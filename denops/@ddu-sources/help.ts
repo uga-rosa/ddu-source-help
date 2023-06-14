@@ -57,7 +57,7 @@ export class Source extends BaseSource<Params> {
               return;
             }
             const path = join(root, fname);
-            const pattern = _pattern.slice(1);
+            const pattern = _pattern.slice(1).replace(/\\(?!\\)/g, "");
 
             if (!tagMap[tag]) {
               tagMap[tag] = [];
