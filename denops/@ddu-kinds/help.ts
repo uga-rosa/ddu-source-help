@@ -17,7 +17,7 @@ type OpenParams = {
   command: string;
 };
 
-type Params = Record<never, never>;
+type Params = Record<PropertyKey, never>;
 
 export class Kind extends BaseKind<Params> {
   override actions: Record<
